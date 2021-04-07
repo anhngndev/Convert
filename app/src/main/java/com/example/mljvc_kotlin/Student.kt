@@ -6,4 +6,7 @@ class Student(
     var phone: String,
     var major: String,
     var tS: String) {
+
+    var link = "$name $born $major $tS"
+
 }

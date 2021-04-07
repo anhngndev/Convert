@@ -9,7 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
 class StudentAdapter(
-    var studentArrayList: ArrayList<Student>
+    var studentArrayList: ArrayList<Student>,
+    var callback: Callback
 ): RecyclerView.Adapter<StudentAdapter.Holder>() {
 
 
@@ -35,17 +36,26 @@ class StudentAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        val student: Student =studentArrayList[position]
+        val student: Student = studentArrayList[position]
         holder.name.text = student.name
         holder.born.text = student.born
         holder.phone.text = student.phone
         holder.major.text = student.major
         holder.tS.text = student.tS
 
+        holder.edit.setOnClickListener {
+
+        }
     }
 
     fun updateData(data: ArrayList<Student>) {
         studentArrayList = data
         notifyDataSetChanged()
     }
+
+    interface Callback{
+        fun onDelete(index: Int, student: Student)
+        fun onEdit(index: Int, student: Student)
+    }
+
 }
