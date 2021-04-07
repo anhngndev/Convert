@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import java.util.*
 
 class MainActivity : AppCompatActivity(), StudentAdapter.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,8 +46,8 @@ class MainActivity : AppCompatActivity(), StudentAdapter.Callback {
     private lateinit var college: RadioButton
     private lateinit var recyclerView: RecyclerView
 
-    private var backUpStudentArrayList: ArrayList<Student> = arrayListOf()
-    private var currentStudentArrayList: ArrayList<Student> = arrayListOf()
+    private var backUpStudentArrayList: MutableList<Student> = mutableListOf()
+    private var currentStudentArrayList: MutableList<Student> = mutableListOf()
 
     private var studentAdapter: StudentAdapter? = null
 
@@ -57,6 +58,95 @@ class MainActivity : AppCompatActivity(), StudentAdapter.Callback {
 
 
     private fun setAction() {
+        sortByName.setOnClickListener {
+            setSortByName()
+            unSort.visibility = View.VISIBLE
+
+        }
+
+        sortByBorn.setOnClickListener {
+            setSortByBorn()
+            unSort.visibility = View.VISIBLE
+
+
+        }
+        sortByPhone.setOnClickListener {
+            setSortByPhone()
+            unSort.visibility = View.VISIBLE
+
+        }
+
+//      no action
+        unSort.setOnClickListener {
+            val currentKey = searchEditText.text.toString()
+            recyclerView.adapter = StudentAdapter(currentStudentArrayList, this)
+//            findWithKey(currentKey)
+            unSort.visibility = View.INVISIBLE
+            titleCurrentSort.text = "Normal sort"
+
+        }
+
+        find.setOnClickListener {
+            findWithKey(searchEditText.text.toString())
+            hideKeyboard()
+        }
+
+        add.setOnClickListener {
+            if (checkInput()){
+                if (editing){
+                    updateStudent()
+                } else{
+                    addStudent()
+                }
+
+            } else{
+                Toast.makeText(applicationContext, "Please type full", Toast.LENGTH_SHORT)
+                    .show()
+                Log.e("Add Student:", "error")
+
+            }
+        }
+    }
+
+    private fun setSortByName() {
+        var students: MutableList<Student> = mutableListOf()
+        students = currentStudentArrayList
+        students.sortBy { it.name }
+        recyclerView.adapter = StudentAdapter(students,this)
+        titleCurrentSort.text = "Sort by name"
+    }
+    private fun setSortByBorn() {
+        var students: MutableList<Student> = mutableListOf()
+        students = currentStudentArrayList
+        students.sortBy { it.born }
+        recyclerView.adapter = StudentAdapter(students,this)
+        titleCurrentSort.text = "Sort by born"
+    }
+    private fun setSortByPhone() {
+        var students: MutableList<Student> = mutableListOf()
+        students = currentStudentArrayList
+        students.sortBy { it.phone }
+        recyclerView.adapter = StudentAdapter(students,this)
+        titleCurrentSort.text = "Sort by phone"
+    }
+
+    private fun addStudent() {
+        var student: Student = getInput()
+        if (checkInvalidPhone(student)) {
+            currentStudentArrayList.add(student)
+            Log.e("Size:", currentStudentArrayList.size.toString() + "")
+
+            recyclerView.adapter = StudentAdapter(currentStudentArrayList,this)
+            clearText()
+            Toast.makeText(applicationContext, "Complete", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(applicationContext, "Duplicate phone", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+//      no action
+    private fun checkInvalidPhone(student: Student): Boolean {
+        return true
     }
 
     private fun initView() {
@@ -89,10 +179,11 @@ class MainActivity : AppCompatActivity(), StudentAdapter.Callback {
         recyclerView.adapter = StudentAdapter(currentStudentArrayList, this)
     }
 
-    fun Context.hideKeyboard(view: View) {
+    private fun Context.hideKeyboard() {
+        val view: View?= getCurrentFocus()
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+        inputMethodManager.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 
     private fun fillData(student: Student) {
@@ -147,11 +238,54 @@ class MainActivity : AppCompatActivity(), StudentAdapter.Callback {
     }
 
     override fun onDelete(index: Int, student: Student) {
-        Log.e("Delete", " done")
+        if(editing) Toast.makeText(this, "Please save after delete", Toast.LENGTH_SHORT).show()
+        else {
+            currentStudentArrayList.remove(student)
+            recyclerView.adapter = StudentAdapter(currentStudentArrayList,this)
+            findWithKey(searchEditText.text.toString())
+
+        }
     }
 
     override fun onEdit(index: Int, student: Student) {
+        add.setImageResource(R.drawable.white_check)
+        editing = true
+        idIndexEditing = index
+        indexEditing = index
+        fillData(student)
         Log.e("Edit", " done")
+
+    }
+
+    private fun findWithKey(key: String){
+        val students = currentStudentArrayList
+        val studentsFiltered: MutableList<Student>?= mutableListOf()
+        for (d in students) {
+            if (d.link.contains(key)) {
+                studentsFiltered?.add(d)
+            }
+        }
+        recyclerView.adapter = studentsFiltered?.let { StudentAdapter(it,this) }
+        Log.e("Size:", studentsFiltered?.size.toString() + "")
+    }
+
+    private fun updateStudent(){
+        val student = getInput()
+        if (checkInvalidPhone(student)) {
+//            for (d in currentStudentArrayList) {
+//                if (d.getId() === idIndexEditing) {
+//                    currentIndexEditing = currentStudentArrayList.indexOf(d)
+//                    break
+//                }
+//            }
+            currentStudentArrayList[indexEditing] = getInput()
+            recyclerView.adapter = StudentAdapter(currentStudentArrayList, this)
+            changeStatus()
+            clearText()
+            Toast.makeText(applicationContext, "Complete", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(applicationContext, "Duplicate phone", Toast.LENGTH_SHORT).show()
+        }
 
     }
 

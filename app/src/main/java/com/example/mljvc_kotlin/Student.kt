@@ -7,6 +7,6 @@ class Student(
     var major: String,
     var tS: String) {
 
-    var link = "$name $born $major $tS"
+    var link = "$name $born $major $tS".toLowerCase()
 
 }

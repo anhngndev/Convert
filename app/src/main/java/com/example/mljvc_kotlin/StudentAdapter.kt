@@ -9,14 +9,14 @@ import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
 class StudentAdapter(
-    var studentArrayList: ArrayList<Student>,
+    var studentArrayList: MutableList<Student>,
     var callback: Callback
-): RecyclerView.Adapter<StudentAdapter.Holder>() {
+) : RecyclerView.Adapter<StudentAdapter.Holder>() {
 
 
     class Holder(view: View) : RecyclerView.ViewHolder(view) {
         var name: TextView = view.findViewById(R.id.name)
-        var born: TextView= view.findViewById(R.id.born)
+        var born: TextView = view.findViewById(R.id.born)
         var phone: TextView = view.findViewById(R.id.phone)
         var major: TextView = view.findViewById(R.id.major)
         var tS: TextView = view.findViewById(R.id.tS)
@@ -27,7 +27,8 @@ class StudentAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val view: View = LayoutInflater.from(parent.context).inflate(R.layout.student_item, parent, false)
+        val view: View =
+            LayoutInflater.from(parent.context).inflate(R.layout.student_item, parent, false)
         return Holder(view)
     }
 
@@ -44,16 +45,25 @@ class StudentAdapter(
         holder.tS.text = student.tS
 
         holder.edit.setOnClickListener {
-
+            callback.onEdit(position, student)
+        }
+        holder.delete.setOnClickListener {
+            callback.onDelete(position, student)
         }
     }
 
-    fun updateData(data: ArrayList<Student>) {
+    fun updateData(data: MutableList<Student>) {
         studentArrayList = data
         notifyDataSetChanged()
     }
 
-    interface Callback{
+    fun getMutableList(): MutableList<Student>{
+        return studentArrayList
+    }
+
+
+
+    interface Callback {
         fun onDelete(index: Int, student: Student)
         fun onEdit(index: Int, student: Student)
     }
